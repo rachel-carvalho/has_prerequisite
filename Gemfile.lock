@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    has_prerequisite (1.0.0.pre.alpha)
+    has_prerequisite (1.0.0.alpha)
       rails
 
 GEM

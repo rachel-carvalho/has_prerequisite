@@ -18,9 +18,8 @@ describe HasPrerequisite, type: :controller do
       prerequisite :prerequisite1, redirection_path: 'path_1'
       prerequisite :prerequisite2, redirection_path: 'path_2', if: :condition
 
-      before_action :perform_checks
-
       def index
+        perform_checks
         render text: nil
       end
 
@@ -52,6 +51,13 @@ describe HasPrerequisite, type: :controller do
       expect(controller).to receive(:prerequisite1) { true }
       expect(controller).to receive(:prerequisite2) { false }
       expect(subject).to redirect_to 'path_2'
+    end
+
+    it 'stores the location to the session' do
+      expect(controller).to receive(:prerequisite1) { true }
+      expect(controller).to receive(:prerequisite2) { false }
+      expect(controller).to receive(:store_location).with('/anonymous')
+      subject
     end
   end
 

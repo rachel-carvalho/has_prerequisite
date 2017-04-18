@@ -55,7 +55,7 @@ module HasPrerequisite
   end
 
   def stored_location
-    session.delete(:return_to)
+    session.delete(:return_to) || root_path
   end
 
   class PrerequisiteNotMet < StandardError; end

@@ -3,7 +3,7 @@ require_relative 'dummy/spec/rails_helper'
 
 describe HasPrerequisite::VERSION do
   it 'has a version number' do
-    expect(HasPrerequisite::VERSION).not_to be nil
+    expect(subject).not_to be nil
   end
 end
 
@@ -39,10 +39,9 @@ describe HasPrerequisite, type: :controller do
       end
   end
 
-  before { @controller = controller }
-  subject { get :index }
-
   describe 'redirection' do
+    subject { get :index }
+
     it 'does not interfere when the prerequisite is met' do
       expect(controller).to receive(:prerequisite1) { true }
       expect(controller).to receive(:prerequisite2) { true }
@@ -57,6 +56,8 @@ describe HasPrerequisite, type: :controller do
   end
 
   describe 'conditionnal' do
+    subject { get :index }
+
     it 'it supports an `if` option to skip the check' do
       expect(controller).to receive(:condition) { false }
       expect(controller).to_not receive(:prerequisite2)
@@ -64,11 +65,12 @@ describe HasPrerequisite, type: :controller do
     end
   end
 
-  context 'is a controller that skips the prerequisites' do
+  describe 'fulfilling_prerequisite' do
     controller(ApplicationController) do
       include HasPrerequisite
 
       prerequisite :pre, redirection_path: 'path_1'
+      before_action :perform_checks
       fulfilling_prerequisite
 
       def index
@@ -76,12 +78,33 @@ describe HasPrerequisite, type: :controller do
       end
     end
 
-    describe 'fulfilling_prerequisite' do
-      it 'skips the checks' do
-        expect(controller).to_not receive(:pre)
-        expect(subject).to be_success
-      end
+    subject { get :index }
+
+    it 'skips the checks' do
+      expect(controller).to_not receive(:pre)
+      expect(subject).to be_success
     end
   end
 
+  describe 'step_fulfilled!' do
+    controller(ApplicationController) do
+      include HasPrerequisite
+
+      prerequisite :pre, redirection_path: 'path_1'
+      before_action :perform_checks
+      fulfilling_prerequisite
+
+      def index
+        step_fulfilled!
+      end
+    end
+
+    before { session[:return_to] = 'redirect_back_to' }
+    subject { get :index }
+
+    it 'skips the checks' do
+      expect(controller).to_not receive(:pre)
+      expect(subject).to redirect_to 'redirect_back_to'
+    end
+  end
 end

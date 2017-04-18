@@ -14,8 +14,6 @@ module HasPrerequisite
 
   module ClassMethods
     def prerequisite(method, redirection_path: nil, **options)
-      before_action :perform_checks
-
       prerequisites << { method: method, redirection_path: redirection_path, options: options }
     end
 
@@ -25,7 +23,7 @@ module HasPrerequisite
   end
 
   def step_fulfilled!
-    redirect_to stored_location_for(:user)
+    redirect_to stored_location
   end
 
   private
@@ -33,7 +31,7 @@ module HasPrerequisite
   def perform_checks
     return if self.class.skipping_checks
     return unless failing_preriquisite
-    store_location_for(:user, request.fullpath)
+    store_location(request.fullpath)
     raise HasPrerequisite::PrerequisiteNotMet
   end
 
@@ -50,6 +48,14 @@ module HasPrerequisite
   def redirect_path
     return send(failing_preriquisite[:redirection_path]) if failing_preriquisite[:redirection_path].is_a? Symbol
     failing_preriquisite[:redirection_path]
+  end
+
+  def store_location(path)
+    session[:return_to] = path
+  end
+
+  def stored_location
+    session.delete(:return_to)
   end
 
   class PrerequisiteNotMet < StandardError; end

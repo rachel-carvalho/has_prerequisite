@@ -102,7 +102,7 @@ describe HasPrerequisite, type: :controller do
     before { session[:return_to] = 'redirect_back_to' }
     subject { get :index }
 
-    it 'skips the checks' do
+    it 'redirects to the stored location' do
       expect(controller).to_not receive(:pre)
       expect(subject).to redirect_to 'redirect_back_to'
     end

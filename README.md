@@ -22,7 +22,67 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+This gem adds features to your Rails controllers. 
+
+First, in your `ApplicationController` or any controller or method that you want to protect, use `perform_checks` method.
+
+```Ruby
+class ApplicationController < ActionController::Base
+
+before_filter :perform_checks # This will execute on every method of your controller
+
+def index
+  preform_checks # you can call it directly here, especially if you need an instance variable instanciated for a prerequisite
+end
+```
+
+Once you made sure the checks will be performed on the parts of your application you want to protect, define your prerequisites where you want to protect. The `redirection_path` is where you want your user to be redirected to fulfill the prerequisite. Current location will be stored for future redirection, when the prerequisite is fulfilled.
+
+``` Ruby
+class ProfilesController < ApplicationController
+  has_prerequisite :accepted_terms_and_conditions, redirection_path :terms_and_conditions_path
+  
+  private
+  
+  def accepted_terms_and_conditions
+    current_user.accepted_terms_and_conditions_at.present?
+  end
+end
+```
+
+If the path to fulfill the prerequisite is protected by `has_prerequisite` and `perform_checks` (if you're using them in the `ApplicationController` for instance), you can mark it as `fulfilling_prerequisite`
+
+``` Ruby
+class TermsAndConditionsController < ApplicationController
+  fulfilling_prerequisite
+end
+```
+
+Once action was taken by the user and can now access the page they wanted to see at the first place, you can use `step_fulfilled!` to redirect them back to it
+
+``` Ruby
+ class TermsAndConditionsController < ApplicationController
+    fulfilling_prerequisite
+
+    def edit; end
+
+    def update
+      if current_user.update(accepted_terms_and_conditions_at: Datetime.now)
+        step_fulfilled!
+      else
+        render :edit
+      end
+    end
+  end
+```
+
+### Options
+
+You can use a conditionnal to the prerequisite
+
+``` Ruby
+prerequisite :valid_subscription, redirection_path: :new_subscription_path, if: :should_be_charged?
+```
 
 ## Development
 
@@ -32,7 +92,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/has_prerequisite. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/sophiedeziel/has_prerequisite. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 
 ## License

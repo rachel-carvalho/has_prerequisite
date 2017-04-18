@@ -1,4 +1,5 @@
 require "has_prerequisite/version"
+require "has_prerequisite/railtie" if defined?(Rails)
 require "active_support"
 
 module HasPrerequisite

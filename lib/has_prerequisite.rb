@@ -9,7 +9,7 @@ module HasPrerequisite
     self.prerequisites = []
     self.skipping_checks = false
 
-    rescue_from HasPrerequisite::PrerequisiteNotMet, with: :prerequisite_not_met!
+    rescue_from PrerequisiteNotMet, with: :prerequisite_not_met!
   end
 
   module ClassMethods
@@ -32,7 +32,7 @@ module HasPrerequisite
     return if self.class.skipping_checks
     return unless failing_preriquisite
     store_location(request.fullpath)
-    raise HasPrerequisite::PrerequisiteNotMet
+    raise PrerequisiteNotMet
   end
 
   def failing_preriquisite
